@@ -9,6 +9,7 @@ library(lubridate)
 library(anytime)
 library(readr)
 library(yaml)
+library(glue)
 
 #### 1: Beginning of script
 
@@ -29,8 +30,7 @@ stations_metadata <-
   GQL(
     query=gql_metadata_qry,
     .url = configs$vegvesen_url
-    ) 
-
+  ) 
 
 #### 2: Transforming metadata
 
@@ -46,6 +46,11 @@ source("functions/data_tests.r")
 test_stations_metadata(stations_metadata_df)
 
 
+### 4: Time-function
+source("functions/data_transformations.r")
+to_iso8601(lubridate::as_datetime("2016-09-01 10:11:12"),0)
+to_iso8601(lubridate::as_datetime("2016-09-01 10:11:12"),-4)
+
 ### 5: Final volume query: 
 
 source("gql-queries/vol_qry.r")
@@ -60,10 +65,34 @@ stations_metadata_df %>%
   ) %>% 
   GQL(., .url = configs$vegvesen_url) %>%
   transform_volumes() %>% 
-  ggplot(aes(x=from, y=volume)) + 
+  ggplot(aes(x=from, y=volume, group = 1)) + 
   geom_line() + 
-  theme_classic()
+  theme_classic() 
 
+### Task 6
+stations_metadata_df %>% 
+  filter(latestData > Sys.Date() - days(7)) %>% 
+  # Randomly samples one station from the filtered data and stores it in `sampled_station`
+  sample_n(1) -> sampled_station
+# Extracts the name of the sampled station and stores it in `station_name`
+station_name <- sampled_station$name
 
+sampled_station %$% 
+  vol_qry(
+    id = id,
+    from = to_iso8601(latestData, -4),
+    to = to_iso8601(latestData, 0)
+  ) %>% 
+  GQL(., .url = configs$vegvesen_url) %>%
+  transform_volumes() %>% 
+  # Converts the `from` column to POSIXct format for proper date-time plotting
+  mutate(from = as.POSIXct(from, format="%Y-%m-%dT%H:%M:%S")) %>%
+  ggplot(aes(x=from, y=volume, group = 1)) + 
+  geom_line(aes(color = station_name)) + 
+  theme_classic() +
+  # Labels the color legend as 'Traffic Station'
+  labs(color = 'Traffic Station') + 
+  # Formats the x-axis labels as date-time
+  scale_x_datetime(labels = scales::date_format("%Y-%m-%d %H:%M")) 
 
 
