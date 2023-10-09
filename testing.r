@@ -7,7 +7,7 @@ GQL(
   ),
   .url = configs$vegvesen_url
 )
-
+source("gql-queries/vol_qry.r")
 your_input <- GQL(
   vol_qry(
     id=stations_metadata_df$id[1],
