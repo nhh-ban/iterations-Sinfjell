@@ -29,8 +29,7 @@ stations_metadata <-
   GQL(
     query=gql_metadata_qry,
     .url = configs$vegvesen_url
-    ) 
-
+  ) 
 
 #### 2: Transforming metadata
 
@@ -63,7 +62,6 @@ stations_metadata_df %>%
   ggplot(aes(x=from, y=volume)) + 
   geom_line() + 
   theme_classic()
-
 
 
 
