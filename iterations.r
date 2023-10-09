@@ -45,6 +45,11 @@ source("functions/data_tests.r")
 test_stations_metadata(stations_metadata_df)
 
 
+### 4: Time-function
+source("functions/data_transformations.r")
+to_iso8601(lubridate::as_datetime("2016-09-01 10:11:12"),0)
+to_iso8601(lubridate::as_datetime("2016-09-01 10:11:12"),-4)
+
 ### 5: Final volume query: 
 
 source("gql-queries/vol_qry.r")
