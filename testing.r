@@ -52,3 +52,22 @@ sampled_station %$%
   geom_line(aes(color = station_name)) + 
   theme_classic() +
   labs(color = 'Traffic Station')
+
+
+stations_metadata_df %>% 
+  filter(latestData > Sys.Date() - days(7)) %>% 
+  sample_n(1) %$% 
+  vol_qry(
+    id = id,
+    from = to_iso8601(latestData, -4),
+    to = to_iso8601(latestData, 0)
+  ) %>% 
+  GQL(., .url = configs$vegvesen_url) %>%
+  transform_volumes() %>% 
+  mutate(from = as.POSIXct(from, format="%Y-%m-%dT%H:%M:%S")) %>%
+  ggplot(aes(x=from, y=volume, group = 1)) + 
+  geom_line(aes(color = station_name)) + 
+  theme_classic() +
+  labs(color = 'Traffic Station') +
+  scale_x_datetime(labels = scales::date_format("%Y-%m-%d %H:%M"))
+
