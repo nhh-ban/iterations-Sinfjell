@@ -1,4 +1,3 @@
-# Save this snippet as vol_qry.r in the gql-queries folder
 vol_qry <- function(id, from, to) {
   query <- glue::glue(
     '{

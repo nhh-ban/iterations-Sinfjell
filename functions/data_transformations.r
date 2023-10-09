@@ -22,6 +22,19 @@ to_iso8601 <- function(datetime, offset) {
   return(iso_datetime)
 }
 
+transform_volumes <- function(data) {
+  volumes <- data$trafficData$volume$byHour$edges
+  df <- purrr::map_dfr(volumes, ~{
+    tibble::tibble(
+      from = .x$node$from,
+      to = .x$node$to,
+      volume = .x$node$total$volumeNumbers$volume
+    )
+  })
+  return(df)
+}
+
+
 
 
 
